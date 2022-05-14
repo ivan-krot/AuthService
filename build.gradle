@@ -12,8 +12,25 @@ repositories {
 dependencies {
     // https://mvnrepository.com/artifact/org.testng/testng
     testImplementation 'org.testng:testng:7.5'
+    testRuntimeOnly group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 }
 
 test {
-    useTestNG()
+    useTestNG() {
+        switch (System.properties['group']) {
+            case ("positive"):
+                suites "src/test/resources/suites/suite_p.xml"
+                System.out.println("POSITIVE")
+                break
+            case ("negative"):
+                suites "src/test/resources/suites/suite_n.xml"
+                System.out.println("NEGATIVE")
+                break
+            default:
+                suites "src/test/resources/suites/suite.xml"
+                System.out.println("DEFAULT")
+                break
+        }
+        useDefaultListeners true
+    }
 }
