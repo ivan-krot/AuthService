@@ -12,6 +12,13 @@ import static org.testng.Assert.*;
 
 public class AuthenticationServiceTest {
 
+    private AuthenticationService authenticationService;
+
+    @BeforeGroups(groups = {"positive", "negative"})
+    public void setUpNegative() {
+        authenticationService = new AuthenticationService();
+    }
+
     //Move it outside in a future
     private void validateResponse(Response response, int code, String message) {
         SoftAssert softAssert = new SoftAssert();
@@ -26,15 +33,12 @@ public class AuthenticationServiceTest {
         return matcher.matches();
     }
 
-    private final AuthenticationService authenticationService = new AuthenticationService();
-
     @Test(
             description = "Successful Authentication",
-            groups = "positive",
-            threadPoolSize = 5
+            groups = "positive"
     )
     @Parameters({"email-address", "password"})
-    public void testSuccessfulAuthentication(@Optional("user1@test.com1") String email, @Optional("password1") String pass) {
+    public void testSuccessfulAuthentication(@Optional("user1@test.com") String email, @Optional("password1") String pass) {
         Response response = authenticationService.authenticate(email, pass);
         SoftAssert softAssert = new SoftAssert();
         softAssert.assertEquals(response.getCode(), 200, "Response code should be 200");
@@ -43,13 +47,14 @@ public class AuthenticationServiceTest {
         softAssert.assertAll();
     }
 
-    @DataProvider(name = "invalidData", parallel = true)
+    @DataProvider(name = "invalidData")
     public Object[][] invalidLogins() {
         return new Object[][]{
                 new Object[]{"user1@test.com", "wrong_password", new Response(401, "Invalid email or password")},
                 new Object[]{"", "password1", new Response(400, "Email should not be empty string")},
                 new Object[]{"user1", "password1", new Response(400, "Invalid email")},
                 new Object[]{"user1@test", "", new Response(400, "Password should not be empty string")},
+                new Object[]{"IRetryAnalyzer", "Repeat 3 times", new Response(400, "Invalid email")},
         };
     }
 
@@ -74,4 +79,3 @@ public class AuthenticationServiceTest {
         assertEquals(i, 5);
     }
 }
-
